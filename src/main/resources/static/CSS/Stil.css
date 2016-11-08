@@ -1,0 +1,109 @@
+body {
+    background-color: aliceblue;
+}
+
+
+#btnAdd {
+    text-transform: uppercase;
+    background-color: #22B473;
+    border: 3px solid;
+    border-color: #def #678 #345 #cde;
+    border-radius: 3px;
+    font-weight: bold;
+    color: #FFF;
+    padding: 3px 10px;
+    width: 100px;
+}
+#btnAdd:hover {
+    background-color: forestgreen;
+}
+
+#btnAdd:active {
+    border-color: #345 #cde #def #678 ;
+}
+
+#btnDelete {
+    text-transform: uppercase;
+    background: #22B473;
+    border: 3px solid;
+    border-color: #def #678 #345 #cde;
+    border-radius: 3px;
+    font-weight: bold;
+    color: #FFF;
+    padding: 3px 10px;
+    width: 100px;
+}
+#btnDelete:hover {
+    background-color: forestgreen;
+}
+
+#btnDelete:active {
+    border-color: #345 #cde #def #678 ;
+}
+
+#vareliste {
+    border: 2px solid ;
+    border-color: #def #678 #345 #cde ;
+    margin-top: 5px;
+    width: 400px;
+    min-height: 200px;
+    wrap-option: no-wrap;
+    background-color: ghostwhite;
+}
+
+html {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+#varer {
+    padding-left: 10px;
+}
+
+a {
+    border: 2px solid;
+    border-color: #def #678 #345 #cde;
+    background-color: lightgrey;
+    text-decoration: none;
+    text-align: center;
+    color: darkred;
+    Font: 10pt "Areal" ;
+}
+
+a:active {
+    border-color: #345 #cde #def #678 ;
+}
+
+a:hover {
+    background-color: darkgray;
+}
+td {
+    border-bottom: 1px dotted black;
+    padding-right: 10px;
+}
+
+#vareInput {
+    background-color: lightgrey;
+}
+td {
+    cursor:move;
+}
+li {
+    list-style-type: none;
+}
+
+.e{
+    width: 20%;
+    padding-left: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: #ade0ff;
+    align-content: space-around;
+    border: 2px solid;
+    border-color: #def #678 #345 #cde;
+}
+
+#login {
+    display: block;
+    margin-top: 5px;
+    margin-left: 35%;
+}

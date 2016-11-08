@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>Handleliste</title>
+    <link href="/Stil.css" th:href="@{/CSS/Stil.css}" rel="stylesheet" media="screen"/>
+    <script src="http://rubaxa.github.io/Sortable/Sortable.js"></script>
+
+</head>
+<body onload="refreshList()">
+    <h1>Handleliste</h1>
+    <input type="text" id="vareInput" />
+    <button id="btnAdd" >Add</button>
+
+    <button id="btnDelete" >Delete</button>
+
+    <div id="vareliste">
+        <table id="vliste">
+            <tbody id="varer">
+
+            </tbody>
+        </table>
+    </div>
+    <form th:action="@{/logout}" method="post">
+        <button id="btnSignOut" >Logg ut</button>
+    </form>
+</body>
+<script>
+    /*<![CDATA[*/
+    var tabell = document.getElementById("varer");
+
+    Sortable.create(varer, {
+        group: "varene",
+        sort: true,
+        delay: 0,
+
+        onStart: function(evt){
+            console.log("start");
+        },
+        onEnd: function(evt){
+            removeAll();
+            console.log("slutt");
+            console.log(evt.oldIndex);
+            console.log(evt.newIndex);
+            for (var i = 0; i<tabell.rows.length; i++) {
+                console.log(tabell.rows[i].cells[0].innerHTML);
+                var idn = addItem(tabell.rows[i].cells[0].innerHTML);
+                console.log("id:" + idn);
+                tabell.rows[i].id=idn;
+                delay(50);
+            }
+            tabell.innerHTML="";
+            refreshList();
+        },
+        onMove: function(evt) {
+            console.log("Flytt");
+        },
+
+        onRemove: function(evt){
+            console.log("Fjærna!!")
+        }
+
+    });
+
+    //Forsinkelsesfunskjon for å sikre at ting blir skrevet i riktig rekkefølge til databasen
+    function delay(ms) {
+        var cur_d = new Date();
+        var cur_ticks = cur_d.getTime();
+        var ms_passed = 0;
+        while(ms_passed < ms) {
+            var d = new Date();  // Possible memory leak?
+            var ticks = d.getTime();
+            ms_passed = ticks - cur_ticks;
+            // d = null;  // Prevent memory leak?
+        }
+    }
+
+    var lastUpdatedItemId = '';
+    var vareInput = document.getElementById("vareInput");
+    var inItemId = document.getElementById("inItemId");
+    vareInput.focus();
+
+    //Legger til et nytt element i lista og lagrer det til databasen
+    function addNewItem() {
+        console.log("Add new item");
+        var vareNavn = vareInput.value;
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function(){
+            if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                console.log("text=" + vareNavn);
+                json = JSON.parse(xmlHttp.responseText);
+                var nyid = json.valueOf("id");
+                console.log(json.id);
+                var varer = document.getElementById("varer");
+                var rad = document.createElement("tr");
+                rad.id = json.id;
+                var celle = document.createElement("td");
+                celle.innerHTML = vareNavn;
+
+                var editBtn = document.createElement("a");
+                editBtn.href = "#";
+                editBtn.innerHTML = "Edit ";
+                editBtn.addEventListener('click', editItem, false);
+
+                var deleteBtn = document.createElement("a");
+                deleteBtn.href = "#";
+                deleteBtn.innerHTML = "Delete";
+                deleteBtn.addEventListener('click', removeItem, false);
+
+                rad.appendChild(celle);
+                rad.appendChild(editBtn);
+                rad.appendChild(deleteBtn);
+                varer.appendChild(rad);
+                console.log("ny: " + vareNavn);
+            }
+        };
+        xmlHttp.open("POST", "/save", true);
+        xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlHttp.send("navn="+ vareNavn);
+
+        vareInput.value = "";
+    }
+
+    //Legger til et element i databasen
+    function addItem(navn){
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function(){
+            if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                //return true;
+                console.log("db " +navn);
+                //return
+            }
+        };
+        xmlHttp.open("POST", "/save", true);
+        xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlHttp.send("navn="+ navn);
+    }
+
+    //klikk-funksjon for add-knapp
+    var btnNew = document.getElementById("btnAdd");
+    btnNew.onclick = function() {
+        if (this.innerHTML == 'Add') {
+            var vareInput = document.getElementById("vareInput");
+            vareInput.focus();
+
+            var vareNavn = vareInput.value;
+            if (!vareNavn || vareNavn === "" || vareNavn === " ") {
+                return false;
+            }
+            addNewItem();//document.getElementById("varer"), vareNavn
+
+        } else if (this.innerHTML == 'EDIT') {
+            this.innerHTML = 'Add';
+
+            var vareInput = document.getElementById("vareInput");
+
+            var vareNavn = vareInput.value;
+            if (!vareNavn || vareNavn === "" || vareNavn === " ") {
+                return false;
+            }
+            changeItem(document.getElementById("varer"), vareNavn);
+        }
+    };
+
+    //Delete-knappen sin klikkfunksjon som kjører removeItem
+    var btnDelete = document.getElementById("btnDelete");
+    btnDelete.onclick = function() {
+        removeAll();
+        tabell.innerHTML="";
+        vareInput.focus();
+    }
+
+
+    //Sletter et element fra databasen
+    function removeItem() {
+        var rad = this.parentNode;
+        var item = rad.getElementsByTagName("*");
+        var id = rad.id;
+
+        console.log("RemoveItemTest "+item +id +vareInput);
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function(){
+            if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                //console.log(xmlHttp.responseText);
+                console.log(rad.rowIndex);
+                tabell.deleteRow(rad.rowIndex);
+            }
+        };
+        xmlHttp.open("GET", "/delete/"+id, true);
+        xmlHttp.send();
+    }
+
+    //Sletter allle elementene i databsen
+    function removeAll() {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function(){
+            if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                //console.log("slett alle!");
+
+            }
+        };
+        xmlHttp.open("GET", "/deleteAll", true);
+        xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlHttp.send();
+    }
+
+    //Funskon når Edit trykkes på et listeelement
+    function editItem() {
+        btnNew.innerHTML = 'EDIT';
+        var raden = this.parentNode;
+        var item = raden.getElementsByTagName("*");
+        var id = raden.id;
+
+        vareInput.value = item[0].innerHTML;
+        lastUpdatedItemId = id
+        vareInput.focus();
+        vareInput.select();
+    }
+
+    //Endrer navnet på en vare i databasen
+    function changeItem(tabellen, vareNavn) {
+        var id = lastUpdatedItemId;
+        vareNavn = vareInput.value;
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function(){
+            if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                console.log("changeItemID: "+ id+ vareNavn);
+                tabellen.innerHTML="";
+                refreshList();
+                vareInput.value = "";
+            }
+        };
+        xmlHttp.open("POST", "/endre", true);
+        xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlHttp.send("id=" + id + "&navn=" + vareNavn);
+
+    }
+
+    //Oppdaterer listen i siden fra databsen
+    function refreshList(){
+        var vareList=[];
+        var vareInput = document.getElementById("vareInput");
+        vareInput.focus() ;
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function(){
+            if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                json = JSON.parse(xmlHttp.responseText);
+                json.forEach(function(entry){
+                    vareList.push(entry);
+                    varer = document.getElementById("varer");
+                    var rad = document.createElement("tr");
+                    rad.id = entry.id;
+                    var celle = document.createElement("td");
+                    rad.appendChild(celle);
+                    celle.innerHTML = entry.navn;
+
+                    var edit = document.createElement("a");
+                    edit.href = "#";
+                    edit.innerHTML = "Edit ";
+                    edit.addEventListener('click', editItem, false);
+
+                    var deleteBtn = document.createElement("a");
+                    deleteBtn.href = "#";
+                    deleteBtn.innerHTML = "Delete";
+                    deleteBtn.addEventListener('click', removeItem, false);
+
+                    rad.appendChild(edit);
+                    rad.appendChild(deleteBtn);
+                    varer.appendChild(rad);
+
+                });
+            }
+        };
+        xmlHttp.open("GET", "/list/json", true);
+        xmlHttp.send();
+    }
+
+    //Tastatur-trapper som reagerer på enter-knappen
+    vareInput.onkeyup = function(event) {
+        if (event.which == 13) {
+            btnNew.onclick();
+            vareInput.focus();
+            vareInput.select();
+        }
+    };
+
+    //Oppdaterer websida
+    function refresh() {
+        setTimeout(function () {
+            location.replace("/liste");
+        }, 100);
+        vareInput.focus();
+    }
+    /*]]>*/
+</script>
+</html>

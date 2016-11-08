@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8" />
+    <title>Huskeliste</title>
+    <link href="/Stil.css" th:href="@{/CSS/Stil.css}" rel="stylesheet" media="screen"/>
+
+</head>
+<body>
+    <h1>Handleliste</h1>
+    <div id="vareliste">
+        <ul id="varer">
+            <li th:each="p : ${liste}" th:text="${p.navn}"></li>
+        </ul>
+    </div>
+    <form th:action="@{/liste}" method="get">
+        <button id="btnSignOut" >Rediger liste</button>
+    </form>
+</body>
+</html>
